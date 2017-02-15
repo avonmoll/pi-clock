@@ -40,22 +40,17 @@ function initialize(): number[] {
 }
 
 function nextState(state) {
-    if (state == [0, 0]) { return [1, 0] }
-    else if (state == [1, 0]) { return [0, 1] }
-    else if (state == [0, 1]) { return [0, 0] }
+    if (state === [0, 0]) { return [1, 0] }
+    else if (state === [1, 0]) { return [0, 1] }
+    else if (state === [0, 1]) { return [0, 0] }
 }
 
 function nextTime(stateNext) {
     let time: number = getTime();
-    // switch (stateNext) {
-    //     case ([0, 0]): { return (lastLightOffTime - time) % 24 }
-    //     case ([1, 0]): { return (firstLightOnTime - time) % 24 }
-    //     case ([0, 1]): { return (wakeTime - time) % 24 }
-    // }
-    if (stateNext == [0, 0]) { return (lastLightOffTime - time) % 24 }
-    else if (stateNext == [1, 0]) { return (firstLightOnTime - time) % 24 }
-    else if (stateNext == [0, 1]) { return (wakeTime - time) % 24 }
-    else { throw Error('Invalid next state') }
+    if (stateNext === [0, 0]) { return (lastLightOffTime - time) % 24 }
+    else if (stateNext === [1, 0]) { return (firstLightOnTime - time) % 24 }
+    else if (stateNext === [0, 1]) { return (wakeTime - time) % 24 }
+    else { throw Error(`Invalid next state: ${stateNext}`) }
 }
 
 function updateAndSchedule(state) {
