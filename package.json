@@ -1,7 +1,8 @@
 {
-  "name": "mod2lab",
+  "name": "pi-clock",
   "private": true,
   "devDependencies": {
+    "@types/node": "^7.0.5",
     "autoprefixer-core": "^5.2.1",
     "grunt": "^0.4.5",
     "grunt-angular-templates": "^0.5.7",
@@ -41,6 +42,7 @@
     "test": "karma start test\\karma.conf.js"
   },
   "dependencies": {
-    "express": "^4.14.0"
+    "express": "^4.14.0",
+    "onoff": "^1.1.1"
   }
 }

@@ -2,14 +2,14 @@
 
 /**
  * @ngdoc overview
- * @name mod2LabApp
+ * @name piClockApp
  * @description
- * # mod2LabApp
+ * # piClockApp
  *
  * Main module of the application.
  */
 angular
-  .module('mod2LabApp', [
+  .module('piClockApp', [
     'ngAnimate',
     'ngCookies',
     'ngResource',
