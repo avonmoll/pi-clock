@@ -14,11 +14,10 @@ function test() {
         sleepLED.writeSync(Number(!state));
     }, 1000);
 }
-function setState(_a) {
-    var sleepState = _a[0], wakeState = _a[1];
-    sleepLED.writeSync(sleepState);
-    wakeLED.writeSync(wakeState);
-    console.log("set state=" + [sleepState, wakeState] + " at " + getTime);
+function setState(state) {
+    sleepLED.writeSync(state[0]);
+    wakeLED.writeSync(state[1]);
+    console.log("set state=" + [state] + " at " + getTime());
 }
 function getTime() {
     var now = new Date();
