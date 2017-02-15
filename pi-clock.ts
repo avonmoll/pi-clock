@@ -40,17 +40,19 @@ function initialize(): number[] {
 }
 
 function nextState(state) {
-    if (state === [0, 0]) { return [1, 0] }
-    else if (state === [1, 0]) { return [0, 1] }
-    else if (state === [0, 1]) { return [0, 0] }
+    let [sleepState, wakeState] = state;
+    if (sleepState == 0 && wakeState == 0) { return [1, 0] }
+    else if (sleepState == 1 && wakeState == 0) { return [0, 1] }
+    else if (sleepState == 0 && wakeState == 1) { return [0, 0] }
     else { throw Error(`State not valid: ${state}`) }
 }
 
 function nextTime(stateNext) {
     let time: number = getTime();
-    if (stateNext === [0, 0]) { return (lastLightOffTime - time) % 24 }
-    else if (stateNext === [1, 0]) { return (firstLightOnTime - time) % 24 }
-    else if (stateNext === [0, 1]) { return (wakeTime - time) % 24 }
+    let [sleepState, wakeState] = stateNext;
+    if (sleepState == 0 && wakeState == 0) { return (lastLightOffTime - time) % 24 }
+    else if (sleepState == 1 && wakeState == 0) { return (firstLightOnTime - time) % 24 }
+    else if (sleepState == 0 && wakeState == 1) { return (wakeTime - time) % 24 }
     else { throw Error(`Invalid next state: ${stateNext}`) }
 }
 

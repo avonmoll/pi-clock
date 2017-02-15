@@ -36,13 +36,14 @@ function initialize() {
     return state;
 }
 function nextState(state) {
-    if (state === [0, 0]) {
+    var sleepState = state[0], wakeState = state[1];
+    if (sleepState == 0 && wakeState == 0) {
         return [1, 0];
     }
-    else if (state === [1, 0]) {
+    else if (sleepState == 1 && wakeState == 0) {
         return [0, 1];
     }
-    else if (state === [0, 1]) {
+    else if (sleepState == 0 && wakeState == 1) {
         return [0, 0];
     }
     else {
@@ -51,13 +52,14 @@ function nextState(state) {
 }
 function nextTime(stateNext) {
     var time = getTime();
-    if (stateNext === [0, 0]) {
+    var sleepState = stateNext[0], wakeState = stateNext[1];
+    if (sleepState == 0 && wakeState == 0) {
         return (lastLightOffTime - time) % 24;
     }
-    else if (stateNext === [1, 0]) {
+    else if (sleepState == 1 && wakeState == 0) {
         return (firstLightOnTime - time) % 24;
     }
-    else if (stateNext === [0, 1]) {
+    else if (sleepState == 0 && wakeState == 1) {
         return (wakeTime - time) % 24;
     }
     else {
