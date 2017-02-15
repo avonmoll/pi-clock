@@ -26,6 +26,7 @@ function test() {
 function setState([sleepState, wakeState]: [number, number]) {
     sleepLED.writeSync(sleepState);
     wakeLED.writeSync(wakeState);
+    console.log(`set state=${[sleepState, wakeState]} at ${getTime}`)
 }
 
 function getTime(): number {
@@ -64,18 +65,20 @@ function nextTime(stateNext) {
 function updateAndSchedule(state) {
     setState(state);
     let newState = nextState(state);
-    let wait = nextTime(newState);
+    let wait = hoursToMillis(nextTime(newState));
     setTimeout(updateAndSchedule(newState), wait);
 }
 
 function start() {
+    console.log('pi-clock started');
     let state = initialize();
     updateAndSchedule(state);
 }
 
-test()
+start()
 
 process.on('SIGINT', function() {
+    console.log('terminated');
     sleepLED.unexport();
     wakeLED.unexport();
 })
