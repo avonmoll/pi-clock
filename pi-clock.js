@@ -71,7 +71,14 @@ function updateAndSchedule(state) {
     var newState = nextState(state);
     var wait = hoursToMillis(nextTime(newState));
     console.log("wait " + wait / 1000 + " seconds");
-    setTimeout(function (newState) { updateAndSchedule(newState); }, wait);
+    setTimeout(function () {
+        try {
+            updateAndSchedule(newState);
+        }
+        catch (e) {
+            throw e;
+        }
+    }, wait);
 }
 function start() {
     console.log('pi-clock started');
