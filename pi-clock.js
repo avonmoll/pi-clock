@@ -45,6 +45,9 @@ function nextState(state) {
     else if (state === [0, 1]) {
         return [0, 0];
     }
+    else {
+        throw Error("State not valid: " + state);
+    }
 }
 function nextTime(stateNext) {
     var time = getTime();

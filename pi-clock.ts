@@ -43,6 +43,7 @@ function nextState(state) {
     if (state === [0, 0]) { return [1, 0] }
     else if (state === [1, 0]) { return [0, 1] }
     else if (state === [0, 1]) { return [0, 0] }
+    else { throw Error(`State not valid: ${state}`) }
 }
 
 function nextTime(stateNext) {
