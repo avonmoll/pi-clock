@@ -60,8 +60,8 @@ function updateAndSchedule(state) {
     setState(state);
     let newState = nextState(state);
     let wait = hoursToMillis(nextTime(newState));
-    console.log(`wait ${wait * 1000} seconds`)
-    setTimeout(updateAndSchedule(newState), wait);
+    console.log(`wait ${wait / 1000} seconds`)
+    setTimeout((newState) => { updateAndSchedule(newState) }, wait);
 }
 
 function start() {
