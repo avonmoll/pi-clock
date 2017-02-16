@@ -6,6 +6,10 @@ function hoursToMillis(hours: number): number {
     return hours * 3600000;
 }
 
+function mod(x: number, y: number): number {
+    return ((x % y) + y) % y;
+}
+
 let wakeTime: number = 7;
 let firstLightOnTime: number = 6;
 let lastLightOffTime: number = 8;
@@ -23,7 +27,7 @@ function test() {
 function setState([sleepState, wakeState]: [number, number]) {
     sleepLED.writeSync(sleepState);
     wakeLED.writeSync(wakeState);
-    console.log(`set state=${[sleepState, wakeState]} at ${getTime()}`)
+    console.log(`set state=${[sleepState, wakeState]} at ${new Date()}`)
 }
 
 function getTime(): number {
@@ -34,7 +38,7 @@ function getTime(): number {
 function initialize(): number[] {
     let time: number = getTime();
     let state = [0, 0];
-    if (time >= firstLightOnTime) { state = [1, 0] }
+    if (time >= firstLightOnTime && time < lastLightOffTime) { state = [1, 0] }
     else if (time >= wakeTime && time < lastLightOffTime) { state = [0, 1] }
     return state;
 }
@@ -50,9 +54,9 @@ function nextState(state) {
 function nextTime(stateNext) {
     let time: number = getTime();
     let [sleepState, wakeState] = stateNext;
-    if (sleepState == 0 && wakeState == 0) { return (lastLightOffTime - time) % 24 }
-    else if (sleepState == 1 && wakeState == 0) { return (firstLightOnTime - time) % 24 }
-    else if (sleepState == 0 && wakeState == 1) { return (wakeTime - time) % 24 }
+    if (sleepState == 0 && wakeState == 0) { return mod(lastLightOffTime - time, 24) }
+    else if (sleepState == 1 && wakeState == 0) { return mod(firstLightOnTime - time, 24) }
+    else if (sleepState == 0 && wakeState == 1) { return mod(wakeTime - time, 24) }
     else { throw Error(`Invalid next state: ${stateNext}`) }
 }
 
@@ -60,6 +64,9 @@ function updateAndSchedule(state) {
     setState(state);
     let newState = nextState(state);
     let wait = hoursToMillis(nextTime(newState));
+    if (wait < 0) {
+        throw Error(`wait is negative: ${wait}`);
+    }
     console.log(`wait ${wait / 1000} seconds`)
     setTimeout(() => {
         try {
