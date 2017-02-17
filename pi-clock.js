@@ -89,9 +89,18 @@ function updateAndSchedule(state) {
 function start() {
     console.log('pi-clock started');
     var state = initialize();
+    setInterval(function () { }, 10 * 60 * 1000);
     updateAndSchedule(state);
 }
-start();
+if (process.argv[2] == undefined) {
+    start();
+}
+else if (process.argv[2] == "test") {
+    test();
+}
+else {
+    console.log("Invalid arg");
+}
 process.on('SIGINT', function () {
     console.log('terminated');
     sleepLED.unexport();

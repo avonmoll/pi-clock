@@ -81,10 +81,23 @@ function updateAndSchedule(state) {
 function start() {
     console.log('pi-clock started');
     let state = initialize();
+    
+    // Prevent setTimeout from suspending by doing something every 10 minutes
+    setInterval(() => {}, 10 * 60 * 1000);
+    
     updateAndSchedule(state);
 }
 
-start()
+if (process.argv[2] == undefined) {
+    start();
+}
+else if (process.argv[2] == "test") {
+    test();
+}
+else {
+    console.log("Invalid arg");
+}
+
 
 process.on('SIGINT', function() {
     console.log('terminated');
