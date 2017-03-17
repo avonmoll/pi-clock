@@ -1,6 +1,16 @@
-// declare var require: any;
+// ///<reference path="./node_modules/@types/node/index.d.ts" />
+
+let SevenSegment = require('ht16k33-sevensegment-display');
 let GPIO = require('onoff').Gpio;
-// import { Gpio as GPIO } from 'onoff';
+import fs = require('fs');
+
+enum LightState {
+  wake,
+  sleep,
+  off
+}
+
+let days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
 function hoursToMillis(hours: number): number {
     return hours * 3600000;
@@ -10,97 +20,176 @@ function mod(x: number, y: number): number {
     return ((x % y) + y) % y;
 }
 
-let wakeTime: number = 7;
-let firstLightOnTime: number = 6;
-let lastLightOffTime: number = 8;
-let sleepLED = new GPIO(17, 'out');
-let wakeLED = new GPIO(22, 'out');
-
-function test() {
-    setInterval(function() {
-        let state = wakeLED.readSync();
-        wakeLED.writeSync(Number(!state));
-        sleepLED.writeSync(Number(!state));
-    }, 1000)
+function getTime(d:Date): number {
+   return d.getHours() + d.getMinutes() / 60 + d.getSeconds() / 3600;
 }
 
-function setState([sleepState, wakeState]: [number, number]) {
-    sleepLED.writeSync(sleepState);
-    wakeLED.writeSync(wakeState);
-    console.log(`set state=${[sleepState, wakeState]} at ${new Date()}`)
+function dayOfWeek(): number {
+    let now: Date = new Date();
+    return now.getDay();
 }
 
-function getTime(): number {
-    let now: Date = new Date()
-    return now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
-}
+export class PiClock {
 
-function initialize(): number[] {
-    let time: number = getTime();
-    let state = [0, 0];
-    if (time >= firstLightOnTime && time < lastLightOffTime) { state = [1, 0] }
-    else if (time >= wakeTime && time < lastLightOffTime) { state = [0, 1] }
-    return state;
-}
-
-function nextState(state) {
-    let [sleepState, wakeState] = state;
-    if (sleepState == 0 && wakeState == 0) { return [1, 0] }
-    else if (sleepState == 1 && wakeState == 0) { return [0, 1] }
-    else if (sleepState == 0 && wakeState == 1) { return [0, 0] }
-    else { throw Error(`State not valid: ${state}`) }
-}
-
-function nextTime(stateNext) {
-    let time: number = getTime();
-    let [sleepState, wakeState] = stateNext;
-    if (sleepState == 0 && wakeState == 0) { return mod(lastLightOffTime - time, 24) }
-    else if (sleepState == 1 && wakeState == 0) { return mod(firstLightOnTime - time, 24) }
-    else if (sleepState == 0 && wakeState == 1) { return mod(wakeTime - time, 24) }
-    else { throw Error(`Invalid next state: ${stateNext}`) }
-}
-
-function updateAndSchedule(state) {
-    setState(state);
-    let newState = nextState(state);
-    let wait = hoursToMillis(nextTime(newState));
-    if (wait < 0) {
-        throw Error(`wait is negative: ${wait}`);
+    wakeTime: number = 7;
+    firstLightOnTime: number = 6;
+    lastLightOffTime: number = 8;
+    sleepLED = new GPIO(17, 'out');
+    wakeLED = new GPIO(22, 'out');
+    lightState: LightState;
+    eventTimeout;
+    displayTimeout;
+    display = new SevenSegment(0x70, 1);
+    config;
+    
+    constructor() {
+        this.display.display.setBrightness(5);
     }
-    console.log(`wait ${wait / 1000} seconds`)
-    setTimeout(() => {
+
+    test() {
+        setInterval(function() {
+            let state = this.wakeLED.readSync();
+            this.wakeLED.writeSync(Number(!state));
+            this.sleepLED.writeSync(Number(!state));
+        }, 1000)
+    }
+    
+    readConfig() {
+        this.config = JSON.parse(fs.readFileSync('./config/config.json', 'utf8'));
+        this.wakeTime = getTime(new Date(this.config.wakeTime[days[dayOfWeek()]]));
+        this.firstLightOnTime = this.wakeTime - this.config.before / 60;
+        this.lastLightOffTime = this.wakeTime + this.config.after / 60;
+    }
+
+    setState(lightState: LightState) {
+        this.lightState = lightState;
+        let [sleepState, wakeState]:[number,number] = this.unpackState();
+        this.sleepLED.writeSync(sleepState);
+        this.wakeLED.writeSync(wakeState);
+        console.log(`set state=${LightState[this.lightState]} at ${new Date()}`)
+    } 
+
+    initialize(): LightState {
+        let time: number = getTime(new Date());
+        this.readConfig();
+        let state = LightState.off;
+        if (time >= this.firstLightOnTime && time < this.lastLightOffTime) { state = LightState.sleep }
+        else if (time >= this.wakeTime && time < this.lastLightOffTime) { state = LightState.wake }
+        return state;
+    }
+
+    nextState(state:LightState) {
+        switch(state) {
+            case LightState.wake: return LightState.off;
+            case LightState.sleep: return LightState.wake;
+            case LightState.off: return LightState.sleep;
+        }
+    }
+
+    nextTime(stateNext:LightState) {
+        let time: number = getTime(new Date());
+        switch(stateNext) {
+            case LightState.wake:
+                return mod(this.wakeTime - time, 24);
+            case LightState.sleep:
+                return mod(this.firstLightOnTime - time, 24);
+            case LightState.off:
+                return mod(this.lastLightOffTime - time, 24);
+        }
+    }
+
+    updateAndSchedule(state) {
+        // TODO: if state is off, then get tomorrow's configs
+        this.setState(state);
+        let newState = this.nextState(state);
+        let wait = hoursToMillis(this.nextTime(newState));
+        if (wait < 0) {
+            throw Error(`wait is negative: ${wait}`);
+        }
+        console.log(`wait ${wait / 1000} seconds`)
+        return setTimeout(() => {
+            try {
+                this.eventTimeout = this.updateAndSchedule(newState)
+            }
+            catch (e) {
+                throw e
+            }
+        }, wait);
+    }
+
+    displaySchedule() {
+        let now = new Date(),
+        hour = now.getHours(),
+        minute = now.getMinutes();
+
+        //Hours
+        this.display.writeDigit(0, Math.floor(hour / 10));
+        this.display.writeDigit(1, hour % 10);
+
+        //Minutes
+        this.display.writeDigit(3, Math.floor(minute / 10));
+        this.display.writeDigit(4, minute % 10);
+
+        //Colon
+        this.display.setColon(true);
+        
+        //Time until next minute
+        let coeff = 1000 * 60;
+        let nextMinute = Math.ceil(now.getTime() / coeff) * coeff - now.getTime();
+        
+        //Schedule
+        this.displayTimeout = setTimeout(() => {
+            this.displayTimeout = this.displaySchedule();
+        }, nextMinute);
+    }
+
+    start() {
+        console.log('pi-clock started');
+        let state = this.initialize();
+        
         try {
-            updateAndSchedule(newState)
+            clearTimeout(this.eventTimeout);
+            clearTimeout(this.displayTimeout);
         }
-        catch (e) {
-            throw e
+        finally {}
+        
+        // Prevent setTimeout from suspending by doing something every minute
+        this.displayTimeout = this.displaySchedule();
+
+        this.eventTimeout = this.updateAndSchedule(state);
+    }
+
+    unpackState(): [number, number] {
+        switch (this.lightState) {
+          case LightState.wake:
+            return [0, 1];
+          case LightState.sleep:
+            return [1, 0];
+          case LightState.off:
+            return [0, 0];
         }
-    }, wait);
+    }
+    
+    dispose() {
+        this.sleepLED.unexport();
+        this.wakeLED.unexport();
+        clearTimeout(this.eventTimeout);
+        clearTimeout(this.displayTimeout);
+        console.log('pi-clock stopped');
+    }
 }
 
-function start() {
-    console.log('pi-clock started');
-    let state = initialize();
-    
-    // Prevent setTimeout from suspending by doing something every 10 minutes
-    setInterval(() => {}, 10 * 60 * 1000);
-    
-    updateAndSchedule(state);
-}
-
+let clock = new PiClock();
 if (process.argv[2] == undefined) {
-    start();
+    clock.start();
 }
 else if (process.argv[2] == "test") {
-    test();
+    clock.test();
 }
 else {
     console.log("Invalid arg");
 }
-
-
 process.on('SIGINT', function() {
-    console.log('terminated');
-    sleepLED.unexport();
-    wakeLED.unexport();
+    clock.dispose();
+    process.exit();
 })

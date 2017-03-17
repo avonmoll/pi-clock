@@ -42,6 +42,8 @@
     "test": "karma start test\\karma.conf.js"
   },
   "dependencies": {
+    "ht16k33-sevensegment-display": "^0.1.1",
+    "body-parser": "^1.16.1",
     "express": "^4.14.0",
     "onoff": "^1.1.1"
   }

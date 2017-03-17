@@ -1,25 +1,55 @@
-<div class="jumbotron" ng-controller="MainCtrl as main">
-  <h1>{{main.message}}</h1>
-  <h2>{{message}}</h2>
-  <p class="lead">
-    <img src="images/yeoman.png" alt="I'm Yeoman"><br>
-    Always a pleasure scaffolding your apps.
+<div class="jumbotron">
+  <p class="lead col-xs-4">
+    state:
   </p>
-  <p><a class="btn btn-lg btn-success" ng-href="#!/">Splendid!<span class="glyphicon glyphicon-ok"></span></a></p>
+  <button class="btn col-xs-3" style="background-color: #FF0000"></button>
+
 </div>
 
-<div class="row marketing">
-  <h4>HTML5 Boilerplate</h4>
-  <p>
-    HTML5 Boilerplate is a professional front-end template for building fast, robust, and adaptable web apps or sites.
-  </p>
+<div>
+  <form class="form-horizontal">
+    <fieldset>
 
-  <h4>Angular</h4>
-  <p>
-    AngularJS is a toolset for building the framework most suited to your application development.
-  </p>
+      <!-- Form Name -->
+      <legend>Settings</legend>
 
-  <h4>Karma</h4>
-  <p>Spectacular Test Runner for JavaScript.</p>
-  <p>{{"Angular Test"}}</p>
+      <!-- Appended Input-->
+      <div class="form-group">
+        <label class="col-md-4 control-label" for="appendedtext1">First light</label>
+        <div class="col-md-3">
+          <div class="input-group">
+            <input id="appendedtext1" name="appendedtext1" class="form-control" placeholder="60" type="number" required="" ng-model="form.before">
+            <span class="input-group-addon">mins</span>
+          </div>
+          <p class="help-block">before wake time</p>
+        </div>
+      </div>
+      <!-- Appended Input-->
+      <div class="form-group">
+        <label class="col-md-4 control-label" for="appendedtext2">Last light</label>
+        <div class="col-md-3">
+          <div class="input-group">
+            <input id="appendedtext2" name="appendedtext2" class="form-control" placeholder="60" type="number" required="" ng-model="form.after">
+            <span class="input-group-addon">mins</span>
+          </div>
+          <p class="help-block">after wake time</p>
+        </div>
+      </div>
+      <div class="form-group" style="display:flex; align-items:center">
+        <label class="col-md-4 control-label" for="timeSun">Wake time</label>
+        <div class="col-md-4">
+          <!-- <div class="input-group"> -->
+          <div uib-timepicker show-seconds="false" show-meridian="true" ng-model="form.wakeTime.sun"></div>
+          <!-- </div> -->
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-md-4"></label>
+        <button type="submit" class="btn btn-success" ng-click="saveSettings()">Save</button>
+        <button type="button" class="btn btn-danger" ng-click="resetSettings()">Reset</button>
+      </div>
+
+    </fieldset>
+  </form>
+  <div class="col-md-4 alert alert-success" ng-show="showAlert">{{alertMsg}}</div>
 </div>
