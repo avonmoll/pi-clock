@@ -34,11 +34,14 @@ app.get('/configreset', function(req, res){
 });
 
 app.post('/config', function(req, res) {
-  // console.log(req.body.color);
   let config = req.body;
   fs.writeFileSync('./config/config.json', JSON.stringify(config, null, 4));
   piClock.start();
   return res.send('Success!');
+});
+
+app.get('/downloadLog', function(req, res) {
+    return res.send(fs.readFileSync('./out-0.log'));
 });
 
 app.get('/lightState', function(req, res) {

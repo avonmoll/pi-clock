@@ -31,6 +31,9 @@ app.post('/config', function (req, res) {
     piClock.start();
     return res.send('Success!');
 });
+app.get('/downloadLog', function (req, res) {
+    return res.send(fs.readFileSync('./out-0.log'));
+});
 app.get('/lightState', function (req, res) {
     var color = '#505050';
     switch (piClock.lightState) {

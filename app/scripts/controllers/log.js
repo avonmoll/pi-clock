@@ -10,10 +10,11 @@
 angular.module('piClockApp')
   .controller('LogCtrl', function($scope, $http) {
     $scope.download = function() {
-      // do the download here
+      // TODO: do the download here
       $http.get('/downloadLog')
         .then(function(response){
-          console.log(response.data)
+          console.log(response.data);
+          $scope.logFile = response.data;
         }, function(){});
     };
     $scope.logfile = "";
