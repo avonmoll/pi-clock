@@ -50,6 +50,5 @@ angular.module('piClockApp')
       $http.get('/lightState')
         .then(function(result) {
           $scope.stateStyle = result.data;
-          $scope.$apply();
         });
     });
