@@ -8,7 +8,7 @@ var LightState;
     LightState[LightState["wake"] = 0] = "wake";
     LightState[LightState["sleep"] = 1] = "sleep";
     LightState[LightState["off"] = 2] = "off";
-})(LightState || (LightState = {}));
+})(LightState = exports.LightState || (exports.LightState = {}));
 var days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 function hoursToMillis(hours) {
     return hours * 3600000;
@@ -141,6 +141,7 @@ var PiClock = (function () {
         this.wakeLED.unexport();
         clearTimeout(this.eventTimeout);
         clearTimeout(this.displayTimeout);
+        this.display.clear();
         console.log('pi-clock stopped');
     };
     return PiClock;

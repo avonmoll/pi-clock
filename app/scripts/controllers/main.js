@@ -35,6 +35,15 @@ angular.module('piClockApp')
             $scope.form = result.data;
           }, function(err) {
             throw(err);
-          })
-      }
+          });
+      };
+      $scope.shutdown = function() {
+        $http.get('/shutdown');
+        alert('Raspberry Pi shutting down');
+      };
+      $http.get('/lightState')
+        .then(function(result) {
+          $scope.stateStyle = result.data;
+          $scope.$apply();
+        });
     });

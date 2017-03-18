@@ -4,7 +4,7 @@ let SevenSegment = require('ht16k33-sevensegment-display');
 let GPIO = require('onoff').Gpio;
 import fs = require('fs');
 
-enum LightState {
+export enum LightState {
   wake,
   sleep,
   off
@@ -175,6 +175,7 @@ export class PiClock {
         this.wakeLED.unexport();
         clearTimeout(this.eventTimeout);
         clearTimeout(this.displayTimeout);
+        this.display.clear();
         console.log('pi-clock stopped');
     }
 }
