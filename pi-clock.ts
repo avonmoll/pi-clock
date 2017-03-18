@@ -106,7 +106,7 @@ export class PiClock {
         if (wait < 0) {
             throw Error(`wait is negative: ${wait}`);
         }
-        console.log(`wait ${wait / 1000} seconds`)
+        console.log(`wait ${wait / 1000 / 3600} hours`)
         return setTimeout(() => {
             try {
                 this.eventTimeout = this.updateAndSchedule(newState)
@@ -123,7 +123,16 @@ export class PiClock {
         minute = now.getMinutes();
 
         //Hours
-        this.display.writeDigit(0, Math.floor(hour / 10));
+        hour = hour % 12;
+        if (hour == 0) {
+            hour = 12;
+        }
+        if (hour > 10) { 
+            this.display.writeDigit(0, Math.floor(hour / 10));
+        }
+        else {
+            this.display.writeDigit(0, null);
+        }
         this.display.writeDigit(1, hour % 10);
 
         //Minutes

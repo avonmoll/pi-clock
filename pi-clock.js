@@ -1,5 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 var SevenSegment = require('ht16k33-sevensegment-display');
 var GPIO = require('onoff').Gpio;
 var fs = require("fs");
@@ -91,7 +90,7 @@ var PiClock = (function () {
         if (wait < 0) {
             throw Error("wait is negative: " + wait);
         }
-        console.log("wait " + wait / 1000 + " seconds");
+        console.log("wait " + wait / 1000 / 3600 + " hours");
         return setTimeout(function () {
             try {
                 _this.eventTimeout = _this.updateAndSchedule(newState);
@@ -104,7 +103,16 @@ var PiClock = (function () {
     PiClock.prototype.displaySchedule = function () {
         var _this = this;
         var now = new Date(), hour = now.getHours(), minute = now.getMinutes();
-        this.display.writeDigit(0, Math.floor(hour / 10));
+        hour = hour % 12;
+        if (hour == 0) {
+            hour = 12;
+        }
+        if (hour > 10) {
+            this.display.writeDigit(0, Math.floor(hour / 10));
+        }
+        else {
+            this.display.writeDigit(0, null);
+        }
         this.display.writeDigit(1, hour % 10);
         this.display.writeDigit(3, Math.floor(minute / 10));
         this.display.writeDigit(4, minute % 10);
