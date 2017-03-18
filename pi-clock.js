@@ -31,7 +31,7 @@ var PiClock = (function () {
         this.sleepLED = new GPIO(17, 'out');
         this.wakeLED = new GPIO(22, 'out');
         this.display = new SevenSegment(0x70, 1);
-        this.display.display.setBrightness(5);
+        this.display.display.setBrightness(1);
     }
     PiClock.prototype.test = function () {
         setInterval(function () {
@@ -57,7 +57,7 @@ var PiClock = (function () {
         var time = getTime(new Date());
         this.readConfig();
         var state = LightState.off;
-        if (time >= this.firstLightOnTime && time < this.lastLightOffTime) {
+        if (time >= this.firstLightOnTime && time < this.wakeTime) {
             state = LightState.sleep;
         }
         else if (time >= this.wakeTime && time < this.lastLightOffTime) {

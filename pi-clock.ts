@@ -43,7 +43,7 @@ export class PiClock {
     config;
     
     constructor() {
-        this.display.display.setBrightness(5);
+        this.display.display.setBrightness(1);
     }
 
     test() {
@@ -73,7 +73,7 @@ export class PiClock {
         let time: number = getTime(new Date());
         this.readConfig();
         let state = LightState.off;
-        if (time >= this.firstLightOnTime && time < this.lastLightOffTime) { state = LightState.sleep }
+        if (time >= this.firstLightOnTime && time < this.wakeTime) { state = LightState.sleep }
         else if (time >= this.wakeTime && time < this.lastLightOffTime) { state = LightState.wake }
         return state;
     }
