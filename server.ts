@@ -63,7 +63,7 @@ app.get('/shutdown', function(req, res) {
 });
 
 app.listen(3000, function() {
-  console.log('Our app is listening on port 3000!');
+  console.log('pi-clock SERVER started');
 });
 
 process.on('SIGINT', function() {
