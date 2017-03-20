@@ -32,7 +32,7 @@ function dayOfWeek(): number {
 
 function DSTmodifier():number {
     let today = moment(new Date()),
-    tomorrow = moment(new Date(today.getTime() + 24 * 3600 * 1000));
+    tomorrow = moment(new Date(Date.now() + 24 * 3600 * 1000));
     
     if (today.isDST() == tomorrow.isDST()) {
         return 0;

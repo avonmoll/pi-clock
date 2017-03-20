@@ -24,7 +24,7 @@ function dayOfWeek() {
     return now.getDay();
 }
 function DSTmodifier() {
-    var today = moment(new Date()), tomorrow = moment(new Date(today.getTime() + 24 * 3600 * 1000));
+    var today = moment(new Date()), tomorrow = moment(new Date(Date.now() + 24 * 3600 * 1000));
     if (today.isDST() == tomorrow.isDST()) {
         return 0;
     }
