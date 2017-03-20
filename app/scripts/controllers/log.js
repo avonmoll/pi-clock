@@ -11,7 +11,6 @@ angular.module('piClockApp')
   .controller('LogCtrl', function($scope, $http) {
     $scope.logfile = "";
     $scope.download = function() {
-      // TODO: do the download here
       $http({method: 'GET', url: '/downloadLog'}).
         then(function(response) {
           var anchor = angular.element('<a/>');

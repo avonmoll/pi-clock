@@ -3,6 +3,7 @@
 let SevenSegment = require('ht16k33-sevensegment-display');
 let GPIO = require('onoff').Gpio;
 import fs = require('fs');
+let moment = require('moment');
 
 export enum LightState {
   wake,
@@ -27,6 +28,19 @@ function getTime(d:Date): number {
 function dayOfWeek(): number {
     let now: Date = new Date();
     return now.getDay();
+}
+
+function DSTmodifier():number {
+    let today = moment(new Date()),
+    tomorrow = moment(new Date(today.getTime() + 24 * 3600 * 1000));
+    
+    if (today.isDST() == tomorrow.isDST()) {
+        return 0;
+    } else if (today.isDST() &&  !tomorrow.isDST()) {
+        return 1;
+    } else if (!today.isDST() && tomorrow.isDST()) {
+        return -1;
+    }
 }
 
 export class PiClock {
@@ -92,7 +106,7 @@ export class PiClock {
             case LightState.wake:
                 return mod(this.wakeTime - time, 24);
             case LightState.sleep:
-                return mod(this.firstLightOnTime - time, 24);
+                return mod(this.firstLightOnTime - time, 24) + DSTmodifier();
             case LightState.off:
                 return mod(this.lastLightOffTime - time, 24);
         }
@@ -127,7 +141,7 @@ export class PiClock {
         if (hour == 0) {
             hour = 12;
         }
-        if (hour > 10) { 
+        if (hour >= 10) { 
             this.display.writeDigit(0, Math.floor(hour / 10));
         }
         else {
@@ -189,17 +203,20 @@ export class PiClock {
     }
 }
 
-let clock = new PiClock();
-if (process.argv[2] == undefined) {
-    clock.start();
+if (!module.parent) {
+    // this is the main module
+    let clock = new PiClock();
+    if (process.argv[2] == undefined) {
+        clock.start();
+    }
+    else if (process.argv[2] == "test") {
+        clock.test();
+    }
+    else {
+        console.log("Invalid arg");
+    }
+    process.on('SIGINT', function() {
+        clock.dispose();
+        process.exit();
+    })
 }
-else if (process.argv[2] == "test") {
-    clock.test();
-}
-else {
-    console.log("Invalid arg");
-}
-process.on('SIGINT', function() {
-    clock.dispose();
-    process.exit();
-})

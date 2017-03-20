@@ -2,6 +2,7 @@
 var SevenSegment = require('ht16k33-sevensegment-display');
 var GPIO = require('onoff').Gpio;
 var fs = require("fs");
+var moment = require('moment');
 var LightState;
 (function (LightState) {
     LightState[LightState["wake"] = 0] = "wake";
@@ -21,6 +22,18 @@ function getTime(d) {
 function dayOfWeek() {
     var now = new Date();
     return now.getDay();
+}
+function DSTmodifier() {
+    var today = moment(new Date()), tomorrow = moment(new Date(today.getTime() + 24 * 3600 * 1000));
+    if (today.isDST() == tomorrow.isDST()) {
+        return 0;
+    }
+    else if (today.isDST() && !tomorrow.isDST()) {
+        return 1;
+    }
+    else if (!today.isDST() && tomorrow.isDST()) {
+        return -1;
+    }
 }
 var PiClock = (function () {
     function PiClock() {
@@ -77,7 +90,7 @@ var PiClock = (function () {
             case LightState.wake:
                 return mod(this.wakeTime - time, 24);
             case LightState.sleep:
-                return mod(this.firstLightOnTime - time, 24);
+                return mod(this.firstLightOnTime - time, 24) + DSTmodifier();
             case LightState.off:
                 return mod(this.lastLightOffTime - time, 24);
         }
@@ -107,7 +120,7 @@ var PiClock = (function () {
         if (hour == 0) {
             hour = 12;
         }
-        if (hour > 10) {
+        if (hour >= 10) {
             this.display.writeDigit(0, Math.floor(hour / 10));
         }
         else {
@@ -155,17 +168,19 @@ var PiClock = (function () {
     return PiClock;
 }());
 exports.PiClock = PiClock;
-var clock = new PiClock();
-if (process.argv[2] == undefined) {
-    clock.start();
+if (!module.parent) {
+    var clock_1 = new PiClock();
+    if (process.argv[2] == undefined) {
+        clock_1.start();
+    }
+    else if (process.argv[2] == "test") {
+        clock_1.test();
+    }
+    else {
+        console.log("Invalid arg");
+    }
+    process.on('SIGINT', function () {
+        clock_1.dispose();
+        process.exit();
+    });
 }
-else if (process.argv[2] == "test") {
-    clock.test();
-}
-else {
-    console.log("Invalid arg");
-}
-process.on('SIGINT', function () {
-    clock.dispose();
-    process.exit();
-});

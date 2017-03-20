@@ -17,13 +17,15 @@ angular.module('piClockApp')
           $scope.form = result.data;
         });
       $scope.saveSettings = function() {
-        $scope.form.wakeTime.mon = $scope.form.wakeTime.sun;
-        $scope.form.wakeTime.tue = $scope.form.wakeTime.sun;
-        $scope.form.wakeTime.wed = $scope.form.wakeTime.sun;
-        $scope.form.wakeTime.thu = $scope.form.wakeTime.sun;
-        $scope.form.wakeTime.fri = $scope.form.wakeTime.sun;
-        $scope.form.wakeTime.sat = $scope.form.wakeTime.sun;
-        $http.post('/config', $scope.form)
+        var config = $scope.form;
+        config.wakeTime.sun = config.wakeTime.sun.toString();
+        config.wakeTime.mon = config.wakeTime.sun;
+        config.wakeTime.tue = config.wakeTime.sun;
+        config.wakeTime.wed = config.wakeTime.sun;
+        config.wakeTime.thu = config.wakeTime.sun;
+        config.wakeTime.fri = config.wakeTime.sun;
+        config.wakeTime.sat = config.wakeTime.sun;
+        $http.post('/config', config)
           .then(function(result) {
             $scope.showAlert = true;
             $scope.alertMsg = result.data;
