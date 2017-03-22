@@ -1,6 +1,6 @@
 {
   "name": "pi-clock",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "author": "Alexander Von Moll <avonmoll@gmail.com>",
   "description": "A Raspberry Pi-powered light-based alarm clock for toddlers",
   "private": true,
