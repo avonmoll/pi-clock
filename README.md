@@ -20,7 +20,7 @@ $ npm install
 
 ## Usage
 
-Choose one:
+Choose one of the following and then navigate to `<hostname>.local:3000`:
 
 ### [pm2](pm2.keymetrics.io) (Recommended)
 
@@ -66,6 +66,16 @@ $ sudo reboot
 ## Tools
 
 -   Soldering iron (for the I2C backpack)
+
+## [Roadmap](https://trello.com/b/iP9hs92d/pi-clock)
+
+## References
+
+-   [Adafruit Learning Series (1-7)](https://learn.adafruit.com/series/learn-raspberry-pi)
+-   [ApplePi-Baker: create SD cards for RPI from MacOS](https://www.tweaking4all.com/software/macosx-software/macosx-apple-pi-baker/)
+-   [Raspbery Pi Pinout Guide](https://pinout.xyz/)
+-   [7-segment 4-digit Data Sheet](https://cdn-shop.adafruit.com/datasheets/865datasheet.pdf)
+-   [i2c Backpack Wiring Instructions](https://learn.adafruit.com/adafruit-led-backpack/0-dot-56-seven-segment-backpack)
 
 ## Build & development
 
