@@ -17,7 +17,15 @@ angular.module('piClockApp')
           $scope.form = result.data;
         });
       $scope.saveSettings = function() {
-        $http.post('/config', $scope.form)
+        var config = $scope.form;
+        config.wakeTime.sun = config.wakeTime.sun.toString();
+        config.wakeTime.mon = config.wakeTime.sun;
+        config.wakeTime.tue = config.wakeTime.sun;
+        config.wakeTime.wed = config.wakeTime.sun;
+        config.wakeTime.thu = config.wakeTime.sun;
+        config.wakeTime.fri = config.wakeTime.sun;
+        config.wakeTime.sat = config.wakeTime.sun;
+        $http.post('/config', config)
           .then(function(result) {
             $scope.showAlert = true;
             $scope.alertMsg = result.data;
@@ -35,6 +43,14 @@ angular.module('piClockApp')
             $scope.form = result.data;
           }, function(err) {
             throw(err);
-          })
-      }
+          });
+      };
+      $scope.shutdown = function() {
+        $http.get('/shutdown');
+        alert('Raspberry Pi shutting down');
+      };
+      $http.get('/lightState')
+        .then(function(result) {
+          $scope.stateStyle = result.data;
+        });
     });

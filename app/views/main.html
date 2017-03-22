@@ -1,8 +1,8 @@
-<div class="jumbotron">
+<div class="jumbotron container-fluid">
   <p class="lead col-xs-4">
     state:
   </p>
-  <button class="btn col-xs-3" style="background-color: #FF0000"></button>
+  <button class="btn col-xs-3" ng-style="stateStyle"></button>
 
 </div>
 
@@ -51,5 +51,10 @@
 
     </fieldset>
   </form>
-  <div class="col-md-4 alert alert-success" ng-show="showAlert">{{alertMsg}}</div>
+  <div class="col-xs-12 alert alert-success" ng-show="showAlert">{{alertMsg}}</div>
+  <hr />
+  <br />
+  <div class="col-md-4">
+  </div>
+  <button class="btn btn-danger" ng-click="shutdown()">Shutdown Raspberry Pi</button>
 </div>

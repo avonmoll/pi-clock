@@ -3,8 +3,9 @@
 let SevenSegment = require('ht16k33-sevensegment-display');
 let GPIO = require('onoff').Gpio;
 import fs = require('fs');
+let moment = require('moment');
 
-enum LightState {
+export enum LightState {
   wake,
   sleep,
   off
@@ -29,6 +30,19 @@ function dayOfWeek(): number {
     return now.getDay();
 }
 
+function DSTmodifier():number {
+    let today = moment(new Date()),
+    tomorrow = moment(new Date(Date.now() + 24 * 3600 * 1000));
+    
+    if (today.isDST() == tomorrow.isDST()) {
+        return 0;
+    } else if (today.isDST() &&  !tomorrow.isDST()) {
+        return 1;
+    } else if (!today.isDST() && tomorrow.isDST()) {
+        return -1;
+    }
+}
+
 export class PiClock {
 
     wakeTime: number = 7;
@@ -43,7 +57,7 @@ export class PiClock {
     config;
     
     constructor() {
-        this.display.display.setBrightness(5);
+        this.display.display.setBrightness(1);
     }
 
     test() {
@@ -73,7 +87,7 @@ export class PiClock {
         let time: number = getTime(new Date());
         this.readConfig();
         let state = LightState.off;
-        if (time >= this.firstLightOnTime && time < this.lastLightOffTime) { state = LightState.sleep }
+        if (time >= this.firstLightOnTime && time < this.wakeTime) { state = LightState.sleep }
         else if (time >= this.wakeTime && time < this.lastLightOffTime) { state = LightState.wake }
         return state;
     }
@@ -92,7 +106,7 @@ export class PiClock {
             case LightState.wake:
                 return mod(this.wakeTime - time, 24);
             case LightState.sleep:
-                return mod(this.firstLightOnTime - time, 24);
+                return mod(this.firstLightOnTime - time, 24) + DSTmodifier();
             case LightState.off:
                 return mod(this.lastLightOffTime - time, 24);
         }
@@ -106,7 +120,7 @@ export class PiClock {
         if (wait < 0) {
             throw Error(`wait is negative: ${wait}`);
         }
-        console.log(`wait ${wait / 1000} seconds`)
+        console.log(`wait ${wait / 1000 / 3600} hours`)
         return setTimeout(() => {
             try {
                 this.eventTimeout = this.updateAndSchedule(newState)
@@ -123,7 +137,16 @@ export class PiClock {
         minute = now.getMinutes();
 
         //Hours
-        this.display.writeDigit(0, Math.floor(hour / 10));
+        hour = hour % 12;
+        if (hour == 0) {
+            hour = 12;
+        }
+        if (hour >= 10) { 
+            this.display.writeDigit(0, Math.floor(hour / 10));
+        }
+        else {
+            this.display.writeDigit(0, null);
+        }
         this.display.writeDigit(1, hour % 10);
 
         //Minutes
@@ -175,21 +198,25 @@ export class PiClock {
         this.wakeLED.unexport();
         clearTimeout(this.eventTimeout);
         clearTimeout(this.displayTimeout);
+        this.display.clear();
         console.log('pi-clock stopped');
     }
 }
 
-let clock = new PiClock();
-if (process.argv[2] == undefined) {
-    clock.start();
+if (!module.parent) {
+    // this is the main module
+    let clock = new PiClock();
+    if (process.argv[2] == undefined) {
+        clock.start();
+    }
+    else if (process.argv[2] == "test") {
+        clock.test();
+    }
+    else {
+        console.log("Invalid arg");
+    }
+    process.on('SIGINT', function() {
+        clock.dispose();
+        process.exit();
+    })
 }
-else if (process.argv[2] == "test") {
-    clock.test();
-}
-else {
-    console.log("Invalid arg");
-}
-process.on('SIGINT', function() {
-    clock.dispose();
-    process.exit();
-})

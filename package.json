@@ -1,5 +1,8 @@
 {
   "name": "pi-clock",
+  "version": "0.1.0",
+  "author": "Alexander Von Moll <avonmoll@gmail.com>",
+  "description": "A Raspberry Pi-powered light-based alarm clock for toddlers",
   "private": true,
   "devDependencies": {
     "@types/node": "^7.0.5",
@@ -42,9 +45,13 @@
     "test": "karma start test\\karma.conf.js"
   },
   "dependencies": {
-    "ht16k33-sevensegment-display": "^0.1.1",
     "body-parser": "^1.16.1",
     "express": "^4.14.0",
-    "onoff": "^1.1.1"
-  }
+    "ht16k33-sevensegment-display": "^0.1.1",
+    "momentjs": "^2.0.0",
+    "onoff": "^1.1.1",
+    "shelljs": "^0.7.7"
+  },
+  "license": "MIT",
+  "main": "server.js"
 }

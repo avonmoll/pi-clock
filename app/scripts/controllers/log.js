@@ -9,12 +9,22 @@
  */
 angular.module('piClockApp')
   .controller('LogCtrl', function($scope, $http) {
-    $scope.download = function() {
-      // do the download here
-      $http.get('/downloadLog')
-        .then(function(response){
-          console.log(response.data)
-        }, function(){});
-    };
     $scope.logfile = "";
+    $scope.download = function() {
+      $http({method: 'GET', url: '/downloadLog'}).
+        then(function(response) {
+          var anchor = angular.element('<a/>');
+          anchor.attr({
+            href: 'data:attachment/text;charset=utf-8,' + encodeURI(response.data),
+            target: '_blank',
+            download: 'out.log'
+        })[0].click();
+      })
+    };
+    $http.get('/downloadLog')
+      .then(function(response){
+        console.log('log downloaded');
+        var log = response.data; //.replace(/(?:\r\n|\r|\n)/g, '<br />');
+        $scope.logFile = log;
+      }, function(){});  
   });

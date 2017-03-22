@@ -1,14 +1,14 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 var SevenSegment = require('ht16k33-sevensegment-display');
 var GPIO = require('onoff').Gpio;
 var fs = require("fs");
+var moment = require('moment');
 var LightState;
 (function (LightState) {
     LightState[LightState["wake"] = 0] = "wake";
     LightState[LightState["sleep"] = 1] = "sleep";
     LightState[LightState["off"] = 2] = "off";
-})(LightState || (LightState = {}));
+})(LightState = exports.LightState || (exports.LightState = {}));
 var days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 function hoursToMillis(hours) {
     return hours * 3600000;
@@ -23,6 +23,18 @@ function dayOfWeek() {
     var now = new Date();
     return now.getDay();
 }
+function DSTmodifier() {
+    var today = moment(new Date()), tomorrow = moment(new Date(Date.now() + 24 * 3600 * 1000));
+    if (today.isDST() == tomorrow.isDST()) {
+        return 0;
+    }
+    else if (today.isDST() && !tomorrow.isDST()) {
+        return 1;
+    }
+    else if (!today.isDST() && tomorrow.isDST()) {
+        return -1;
+    }
+}
 var PiClock = (function () {
     function PiClock() {
         this.wakeTime = 7;
@@ -31,7 +43,7 @@ var PiClock = (function () {
         this.sleepLED = new GPIO(17, 'out');
         this.wakeLED = new GPIO(22, 'out');
         this.display = new SevenSegment(0x70, 1);
-        this.display.display.setBrightness(5);
+        this.display.display.setBrightness(1);
     }
     PiClock.prototype.test = function () {
         setInterval(function () {
@@ -57,7 +69,7 @@ var PiClock = (function () {
         var time = getTime(new Date());
         this.readConfig();
         var state = LightState.off;
-        if (time >= this.firstLightOnTime && time < this.lastLightOffTime) {
+        if (time >= this.firstLightOnTime && time < this.wakeTime) {
             state = LightState.sleep;
         }
         else if (time >= this.wakeTime && time < this.lastLightOffTime) {
@@ -78,7 +90,7 @@ var PiClock = (function () {
             case LightState.wake:
                 return mod(this.wakeTime - time, 24);
             case LightState.sleep:
-                return mod(this.firstLightOnTime - time, 24);
+                return mod(this.firstLightOnTime - time, 24) + DSTmodifier();
             case LightState.off:
                 return mod(this.lastLightOffTime - time, 24);
         }
@@ -91,7 +103,7 @@ var PiClock = (function () {
         if (wait < 0) {
             throw Error("wait is negative: " + wait);
         }
-        console.log("wait " + wait / 1000 + " seconds");
+        console.log("wait " + wait / 1000 / 3600 + " hours");
         return setTimeout(function () {
             try {
                 _this.eventTimeout = _this.updateAndSchedule(newState);
@@ -104,7 +116,16 @@ var PiClock = (function () {
     PiClock.prototype.displaySchedule = function () {
         var _this = this;
         var now = new Date(), hour = now.getHours(), minute = now.getMinutes();
-        this.display.writeDigit(0, Math.floor(hour / 10));
+        hour = hour % 12;
+        if (hour == 0) {
+            hour = 12;
+        }
+        if (hour >= 10) {
+            this.display.writeDigit(0, Math.floor(hour / 10));
+        }
+        else {
+            this.display.writeDigit(0, null);
+        }
         this.display.writeDigit(1, hour % 10);
         this.display.writeDigit(3, Math.floor(minute / 10));
         this.display.writeDigit(4, minute % 10);
@@ -141,22 +162,25 @@ var PiClock = (function () {
         this.wakeLED.unexport();
         clearTimeout(this.eventTimeout);
         clearTimeout(this.displayTimeout);
+        this.display.clear();
         console.log('pi-clock stopped');
     };
     return PiClock;
 }());
 exports.PiClock = PiClock;
-var clock = new PiClock();
-if (process.argv[2] == undefined) {
-    clock.start();
+if (!module.parent) {
+    var clock_1 = new PiClock();
+    if (process.argv[2] == undefined) {
+        clock_1.start();
+    }
+    else if (process.argv[2] == "test") {
+        clock_1.test();
+    }
+    else {
+        console.log("Invalid arg");
+    }
+    process.on('SIGINT', function () {
+        clock_1.dispose();
+        process.exit();
+    });
 }
-else if (process.argv[2] == "test") {
-    clock.test();
-}
-else {
-    console.log("Invalid arg");
-}
-process.on('SIGINT', function () {
-    clock.dispose();
-    process.exit();
-});
