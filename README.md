@@ -11,9 +11,9 @@ A Raspberry Pi-powered light-based alarm clock for toddlers
 ## Installation
 
 ```sh
-$ git clone https://www.github.com/avonmoll/pi-clock/
+$ git clone https://github.com/avonmoll/pi-clock/
 $ cd pi-clock
-$ npm install
+$ sudo npm install
 ```
 
 (`sudo` may be necessary if installing directly on RPi)
@@ -27,7 +27,7 @@ Choose one of the following and then navigate to `<hostname>.local:3000`:
 Install pm2: 
 
 ```sh
-$ npm install -g pm2
+$ sudo npm install -g pm2
 ```
 
 Configure startup by running the following and then executing the last line of the output: 
@@ -39,7 +39,7 @@ $ pm2 startup
 Start app and save so pm2 will start the app on reboot: 
 
 ```sh
-$ sudo pm2 start server.js -o log --name pi-clock
+$ sudo pm2 start server.js -o out.log --name pi-clock
 $ pm2 save
 ```
 
